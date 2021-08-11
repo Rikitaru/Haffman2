@@ -43,7 +43,8 @@ void sort(Node* arr, int size) {
 }
 
 int main() {
-    setlocale(LC_ALL, "Russian");
+    system("chcp 65001");
+    //setlocale(LC_ALL, "Russian");
     char buff[20];
     int povtor[26] = {0};
     ifstream fin("Input.txt");
@@ -67,7 +68,7 @@ int main() {
         }
     }
     table mainTable(counter_size_table);
-    mainTable.ptr = new Node[mainTable.size];
+    //mainTable.ptr = new Node[mainTable.size];
     int j = -1;
     for (int i_temp = 0; i_temp < 26; i_temp++) {
         if (povtor[i_temp]) {
@@ -81,17 +82,15 @@ int main() {
     sort(mainTable.ptr, mainTable.size);
     cout << endl;
     j=0;
-
-    while (true){
-        Node *temp = new Node;
+    Node *temp = new Node;
+    //while (true){
         temp->kolvo=mainTable.ptr[mainTable.end_index].kolvo + mainTable.ptr[mainTable.end_index - 1].kolvo;
         temp->name = '0' + char(j);
         temp->ptrL=&mainTable.ptr[mainTable.end_index-1];
         temp->ptrR=&mainTable.ptr[mainTable.end_index];
         mainTable.ptr[mainTable.size] = *temp;
-
-
-    }
+        mainTable.size++;
+    //}
 
 
 
