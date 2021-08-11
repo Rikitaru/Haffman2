@@ -8,20 +8,28 @@ struct Node {
     Node* ptrL = nullptr;
     Node* ptrR = nullptr;
     char kod[10] = { "" };
-    void show() const {
+    void show() const{
         cout << "\t" << name << " = " << "kolvo = " << kolvo << endl;
+    }
+    void f(){
+        if(this->ptrL == nullptr) {
+            return;
+        }
+        else{
+            this->ptrL->show();
+            this->ptrL->f();
+            //добавить работу с ptrR
+        }
     }
 };
 struct table {
-    Node *ptr=nullptr;
-    int start_index;
-    int end_index;
+    Node* ptr = nullptr;
     int size;
-    table(int size):size(size), start_index(0), end_index(size-1){
-        ptr = new Node [size];
+    table(int size) :size(size){
+        ptr = new Node[size];
     }
     void show() const {
-        for (int i=0; i< size; i++){
+        for (int i = 0; i < size; i++) {
             ptr[i].show();
         }
     }
@@ -31,7 +39,7 @@ void sort(Node* arr, int size) {
     for (int i = 0; i < size - 1; i++) {
         for (int j = 0; j < size - i - 1; j++) {
             if (arr[j].kolvo < arr[j + 1].kolvo) {
-                std::swap(arr[j],arr[j+1]);
+                std::swap(arr[j], arr[j + 1]);
             }
         }
     }
@@ -42,11 +50,57 @@ void sort(Node* arr, int size) {
     std::cout << endl;
 }
 
+int min(table & table, int i_Left, int i_Right, int i_old_min) {
+    int min;
+    int i_min;
+
+    if (i_Left == 0) {
+        if (i_Right != i_old_min) {
+            min = table.ptr[i_Right].kolvo;
+            i_min = i_Right;
+        }
+        else{
+            min = table.ptr[i_Right+1].kolvo;
+            i_min = i_Right+1;
+        }
+    }
+    else {
+        if ((i_Left-1) != i_old_min) {
+            min = table.ptr[i_Left-1].kolvo;
+            i_min= i_Left-1;
+        }
+        else{
+            min = table.ptr[i_Left-2].kolvo;
+            i_min= i_Left-2;
+        }
+    }
+
+    for (int i = 0; i < i_Left; i++) {
+        if (i != i_old_min) {
+            if (table.ptr[i].kolvo< min ) {
+                min = table.ptr[i].kolvo;
+                i_min = i;
+            }
+        }
+    }
+
+    for (int i = i_Right; i < table.size; i++) {
+        if (i != i_old_min) {
+            if (table.ptr[i].kolvo < min) {
+                min = table.ptr[i].kolvo;
+                i_min = i;
+            }
+        }
+    }
+
+    return i_min;
+}
+
 int main() {
-    system("chcp 65001");
-    //setlocale(LC_ALL, "Russian");
+    // system("chcp 65001");
+    setlocale(LC_ALL, "Russian");
     char buff[20];
-    int povtor[26] = {0};
+    int povtor[26] = { 0 };
     ifstream fin("Input.txt");
     while (!fin.fail()) {
         fin >> buff;
@@ -55,7 +109,8 @@ int main() {
         for (int i = 0; i < strlen(buff); i++) {
             if ((buff[i] >= 'A') && (buff[i] <= 'Z')) {
                 povtor[buff[i] - 65]++;
-            } else if ((buff[i] >= 'a') && (buff[i] <= 'z')) {
+            }
+            else if ((buff[i] >= 'a') && (buff[i] <= 'z')) {
                 povtor[buff[i] - 97]++;
             }
         }
@@ -81,55 +136,74 @@ int main() {
     std::cout << "Создание таблицы завершено." << endl;
     sort(mainTable.ptr, mainTable.size);
     cout << endl;
-    j=0;
-    Node *temp = new Node;
-    //while (true){
-        temp->kolvo=mainTable.ptr[mainTable.end_index].kolvo + mainTable.ptr[mainTable.end_index - 1].kolvo;
-        temp->name = '0' + char(j);
-        temp->ptrL=&mainTable.ptr[mainTable.end_index-1];
-        temp->ptrR=&mainTable.ptr[mainTable.end_index];
-        mainTable.ptr[mainTable.size] = *temp;
-        mainTable.size++;
-    //}
+    int i_L = mainTable.size-2;
+    int i_R = mainTable.size;
+    int i_l_safe = mainTable.size;
+    int i_R_safe = mainTable.size;
+    int i_min1 = mainTable.size - 2;
+    int i_min2 = mainTable.size - 1;
 
-
-
-    /* while (size_table > 0) {
-        cout << "Итерация цикла номер " << counter << " size_table = " << size_table << endl;
-
-       if (((table2[size_table].Name == temp.Name) or (table2[size_table - 1].Name == temp.Name))) {
-            temp.kolvo = table[size_table - 1].kolvo + table[size_table - 2].kolvo;
-            temp.Name = '0' + char(counter);
-            temp.kod[0] = '9';
-            for (int i = 0; i < size_table; i++) {
-                table2[i] = table[i];
-            }
-            table2[size_table] = temp;
-            sort(table2, size_table + 1);
-            a.Name = temp.Name;
-            a.kolvo = temp.kolvo;
-            ptr.ptrL->Name = temp.Name;
-            size_table--;
-            c.Name = '1' + char(counter);
-            c.kolvo = b.kolvo + a.kolvo;
-        } else {
-            temp.kolvo = table[size_table - 1].kolvo + table[size_table - 2].kolvo;
-            temp.Name = '0' + char(counter);
-            temp.kod[0] = '9';
-            for (int i = 0; i < size_table; i++) {
-                table2[i] = table[i];
-            }
-            table2[size_table] = temp;
-            sort(table2, size_table + 1);
-            b.Name = temp.Name;
-            b.kolvo = temp.kolvo;
-            size_table -= 2;
-            c.Name = '1' + char(counter);
-            c.kolvo = b.kolvo + a.kolvo;
+    while (mainTable.size<counter_size_table+(counter_size_table-1)){
+        Node* ptr = new Node[mainTable.size+1];
+        for (int i = 0; i < mainTable.size; i++) {
+            ptr[i] = mainTable.ptr[i];
         }
-        //продолжить с начала цикл
-        counter++;
-    }*/
+        delete[] mainTable.ptr;
+        mainTable.ptr = ptr;
+        ptr[mainTable.size] = *new Node;
+        ptr[mainTable.size].kolvo = mainTable.ptr[i_min1].kolvo + mainTable.ptr[i_min2].kolvo;
+        ptr[mainTable.size].name = '0' + char(j);
+        mainTable.size++;
+
+        i_min1 = min(mainTable, i_L, i_R, -1);
+        i_min2 = min(mainTable, i_L, i_R, i_min1);
+        if (i_min1 < i_L && i_min2 < i_L) {
+            i_L -= 2;
+        }
+        else if (i_min1 >= i_R && i_min2 >= i_R) {
+            i_R += 2;
+        }
+        else {
+            i_L--;
+            i_R++;
+        }
+    }
+
+     i_L = i_l_safe;
+     i_R = i_R_safe;
+int X=i_R_safe-1;
+    while (X<mainTable.size-1) {
+        X++;
+        i_min1 = min(mainTable, i_L, i_R, -1);
+        i_min2 = min(mainTable, i_L, i_R, i_min1);
+        mainTable.ptr[X].ptrL = &mainTable.ptr[i_min2];
+        mainTable.ptr[X].ptrR = &mainTable.ptr[i_min1];
+
+        if (i_min1 < i_L && i_min2 < i_L) {
+            i_L -= 2;
+        }
+        else if (i_min1 >= i_R && i_min2 >= i_R) {
+            i_R += 2;
+        }
+        else {
+            i_L--;
+            i_R++;
+        }
+    }
+    for (int i_temp = 0; i_temp < mainTable.size; i_temp++) {
+            mainTable.ptr[i_temp].show();
+    }
+    mainTable.ptr[8].f();
+
+
+
+    /*рекурсивная расстановка 1 и 0 по всем элементам*/
+    /*рекурсивная функция которая проходит по ptrL пока он не nullptr*/
+    /*рекурсивная функция которая проходит по ptrR пока он не nullptr*/
+    /*ptr[mainTable.size].ptrL = &mainTable.ptr[i_min2];
+    ptr[mainTable.size].ptrR = &mainTable.ptr[i_min1];
+    проверка установки верных связей*/
+
     fin.close();
     return 0;
 }
